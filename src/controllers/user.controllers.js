@@ -34,6 +34,9 @@ const registerUser = asyncHandler(async (req, res) => {
     email: email.toLowerCase(),
     password,
   });
+
+  console.log("user data:", user);
+
   const createduser = await User.findById(user._id).select("-password");
   if (!createduser) {
     throw new ApiError(500, "Something went wrong while registering the user");
@@ -56,4 +59,35 @@ const registerUser = asyncHandler(async (req, res) => {
   );
 });
 
-export { registerUser };
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  console.log("Email", email);
+  console.log("Password:", password);
+  if ([email, password].some((field) => field.trim() === "")) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  const user = User.findOne({ email });
+  console.log("user data:", user);
+
+  if (!user) {
+    throw new ApiError(404, "Email not found");
+  }
+
+  const isPasswordValid = await user.isPasswordCorrect(password);
+  console.log("isPasswordValid:", isPasswordValid);
+
+  if (!isPasswordValid) throw new ApiError(400, "invalid Passowrd");
+  const loggedInUser = User.findById(user._id).select("-password");
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        user: loggedInUser,
+      },
+      "user logged In Successfully"
+    )
+  );
+});
+
+export { registerUser, loginUser };
