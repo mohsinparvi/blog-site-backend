@@ -75,7 +75,6 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
-  console.log("isPasswordValid:", isPasswordValid);
 
   if (!isPasswordValid) throw new ApiError(400, "invalid Passowrd");
   const loggedInUser = User.findById(user._id).select("-password");
