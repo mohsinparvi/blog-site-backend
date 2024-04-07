@@ -67,7 +67,7 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  const user = User.findOne({ email });
+  const user = await User.findOne({ email });
   console.log("user data:", user);
 
   if (!user) {
@@ -82,7 +82,13 @@ const loginUser = asyncHandler(async (req, res) => {
     new ApiResponse(
       200,
       {
-        user: loggedInUser,
+        id: user._id,
+        email: user.email,
+        avatar: user.avatar,
+        verified: user.verified,
+        admin: user.admin,
+        verificationCode: user.verificationCode,
+        accessToken: await user.generateAccessToken(),
       },
       "user logged In Successfully"
     )
