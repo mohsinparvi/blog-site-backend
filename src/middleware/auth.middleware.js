@@ -1,21 +1,22 @@
-import { verify } from "jsonwebtoken";
-import ApiError from "../utils/ApiError";
-import User from "../models/user.model";
+import jwt from "jsonwebtoken";
+import ApiError from "../utils/ApiError.js";
 
-const authGuard = (req, res, next) => {
+import User from "../models/user.model.js";
+
+const authGuard = async (req, _, next) => {
   if (
-    !req.headers.authorization &&
+    req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
-  )
-    throw new ApiError(401, "Not authorized, No Token ");
-  try {
-    const token = req.headers.authorization.split(" ");
-    const { id } = verify(token, process.env.ACCESS_TOKEN_SECRET);
-    req.user = User.findById(id).select("-password");
+  ) {
+    const token = req.headers.authorization.split(" ")[1];
+    const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    const { _id } = decodedToken;
+    req.user = await User.findById(_id).select("-password");
+    console.log("req.user:", req.user);
     next();
-  } catch (error) {
-    throw new ApiError(401, "Not authorized, Token Failed");
+  } else {
+    throw new ApiError(401, "Not authorized, No Token ");
   }
 };
 
-export default authGuard;
+export { authGuard };
