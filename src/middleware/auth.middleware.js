@@ -11,8 +11,8 @@ const authGuard = async (req, _, next) => {
     const token = req.headers.authorization.split(" ")[1];
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     const { _id } = decodedToken;
+
     req.user = await User.findById(_id).select("-password");
-    console.log("req.user:", req.user);
     next();
   } else {
     throw new ApiError(401, "Not authorized, No Token ");
